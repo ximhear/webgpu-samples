@@ -6,6 +6,7 @@ import {
   cubeUVOffset,
   cubePositionOffset,
   cubeVertexCount,
+  cubeColorOffset
 } from '../../meshes/cube';
 
 import basicVertWGSL from '../../shaders/basic.vert.wgsl';
@@ -38,9 +39,34 @@ const verticesBuffer = device.createBuffer({
 });
 new Float32Array(verticesBuffer.getMappedRange()).set(cubeVertexArray);
 verticesBuffer.unmap();
+// 먼저 group(0)과 group(1)에 해당하는 BindGroupLayout 생성
+const bindGroupLayout0 = device.createBindGroupLayout({
+  entries: [
+    {
+      binding: 0,
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      buffer: { type: 'uniform' },
+    },
+  ],
+});
 
+const bindGroupLayout1 = device.createBindGroupLayout({
+  entries: [
+    {
+      binding: 0,
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+      buffer: { type: 'uniform' },
+    },
+  ],
+});
+
+// 그 다음, pipelineLayout을 생성
+const pipelineLayout = device.createPipelineLayout({
+  bindGroupLayouts: [bindGroupLayout0, bindGroupLayout1],
+});
+;
 const pipeline = device.createRenderPipeline({
-  layout: 'auto',
+  layout: pipelineLayout,
   vertex: {
     module: device.createShaderModule({
       code: basicVertWGSL,
@@ -60,6 +86,12 @@ const pipeline = device.createRenderPipeline({
             shaderLocation: 1,
             offset: cubeUVOffset,
             format: 'float32x2',
+          },
+          {
+            // uv
+            shaderLocation: 2,
+            offset: cubeColorOffset,
+            format: 'float32x4',
           },
         ],
       },
@@ -104,14 +136,29 @@ const uniformBuffer = device.createBuffer({
   size: uniformBufferSize,
   usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
 });
+const uniformBuffer1 = device.createBuffer({
+  size: uniformBufferSize,
+  usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+});
 
-const uniformBindGroup = device.createBindGroup({
+const uniformBindGroup0 = device.createBindGroup({
   layout: pipeline.getBindGroupLayout(0),
   entries: [
     {
       binding: 0,
       resource: {
         buffer: uniformBuffer,
+      },
+    },
+  ],
+});
+const uniformBindGroup1 = device.createBindGroup({
+  layout: pipeline.getBindGroupLayout(1),
+  entries: [
+    {
+      binding: 0,
+      resource: {
+        buffer: uniformBuffer1,
       },
     },
   ],
@@ -165,6 +212,13 @@ function frame() {
     transformationMatrix.byteOffset,
     transformationMatrix.byteLength
   );
+  device.queue.writeBuffer(
+    uniformBuffer1,
+    0,
+    transformationMatrix.buffer,
+    transformationMatrix.byteOffset,
+    transformationMatrix.byteLength
+  );
   renderPassDescriptor.colorAttachments[0].view = context
     .getCurrentTexture()
     .createView();
@@ -172,7 +226,8 @@ function frame() {
   const commandEncoder = device.createCommandEncoder();
   const passEncoder = commandEncoder.beginRenderPass(renderPassDescriptor);
   passEncoder.setPipeline(pipeline);
-  passEncoder.setBindGroup(0, uniformBindGroup);
+  passEncoder.setBindGroup(0, uniformBindGroup0);
+  passEncoder.setBindGroup(1, uniformBindGroup1);
   passEncoder.setVertexBuffer(0, verticesBuffer);
   passEncoder.draw(cubeVertexCount);
   passEncoder.end();

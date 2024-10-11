@@ -89,6 +89,7 @@ const pipeline = device.createRenderPipeline({
     // Faces pointing away from the camera will be occluded by faces
     // pointing toward the camera.
     cullMode: 'back',
+    frontFace: 'cw',
   },
 
   // Enable depth testing so that the fragment closest to the camera
@@ -163,16 +164,49 @@ const renderPassDescriptor: GPURenderPassDescriptor = {
 };
 
 const aspect = canvas.width / canvas.height;
-const projectionMatrix = mat4.perspective((2 * Math.PI) / 5, aspect, 1, 100.0);
+const projectionMatrix = createLeftHandedPerspectiveMatrix((2 * Math.PI) / 5, aspect, 1, 100.0);
 
-const modelMatrix1 = mat4.translation(vec3.create(-2, 0, 0));
+const modelMatrix1 = mat4.translation(vec3.create(-2, 0, 1));
 const modelMatrix2 = mat4.translation(vec3.create(2, 0, 0));
 const modelViewProjectionMatrix1 = mat4.create();
 const modelViewProjectionMatrix2 = mat4.create();
-const viewMatrix = mat4.translation(vec3.fromValues(0, 0, -7));
+const viewMatrix = mat4.translation(vec3.fromValues(0, 0, 7));
 
 const tmpMat41 = mat4.create();
 const tmpMat42 = mat4.create();
+
+function createLeftHandedPerspectiveMatrix(fovy, aspect, near, far) {
+  // Create an empty 4x4 matrix
+  let out = mat4.create();
+
+  // fovy (Field of View in Y direction) should be in radians
+  const f = 1.0 / Math.tan(fovy / 2);
+  const rangeInv = 1.0 / (far - near);
+
+  // Set the perspective matrix for left-handed coordinate system
+  out[0] = f / aspect; // X scaling based on aspect ratio
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+
+  out[4] = 0;
+  out[5] = f; // Y scaling based on field of view
+  out[6] = 0;
+  out[7] = 0;
+
+  out[8] = 0;
+  out[9] = 0;
+  out[10] = far * rangeInv; // Z scaling
+  out[11] = 1; // W row to ensure proper perspective divide (left-handed)
+
+  out[12] = 0;
+  out[13] = 0;
+  out[14] = -near * far * rangeInv; // Near and far clip planes (left-handed)
+  out[15] = 0;
+
+  return out;
+}
+
 
 function updateTransformationMatrix() {
   const now = Date.now() / 1000;

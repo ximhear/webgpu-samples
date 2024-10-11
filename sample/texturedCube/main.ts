@@ -6,6 +6,7 @@ import {
   cubeUVOffset,
   cubePositionOffset,
   cubeVertexCount,
+  cubeColorOffset
 } from '../../meshes/cube';
 
 import basicVertWGSL from '../../shaders/basic.vert.wgsl';
@@ -60,6 +61,12 @@ const pipeline = device.createRenderPipeline({
             shaderLocation: 1,
             offset: cubeUVOffset,
             format: 'float32x2',
+          },
+          {
+            // color
+            shaderLocation: 2,
+            offset: cubeColorOffset,
+            format: 'float32x4',
           },
         ],
       },
@@ -132,6 +139,7 @@ const sampler = device.createSampler({
   minFilter: 'linear',
 });
 
+console.log(pipeline.getBindGroupLayout(0));
 const uniformBindGroup = device.createBindGroup({
   layout: pipeline.getBindGroupLayout(0),
   entries: [

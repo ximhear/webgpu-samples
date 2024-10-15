@@ -527,12 +527,14 @@ device.queue.writeBuffer(
 
 const tmpMat4 = mat4.create();
 function updateTransformationMatrix() {
-  const now = Date.now() / 1000;
+  const now = 0;//Date.now() / 1000;
 
   for (let i = 0, m = 0; i < numInstances; i++, m += matrixFloatCount) {
     mat4.rotate(
       modelMatrices[i],
-      vec3.fromValues(Math.sin(now), Math.cos(now), 0),
+      // vec3.fromValues(Math.sin(now), Math.cos(now), 0),
+      // (Math.PI / 180) * 30,
+      vec3.fromValues(0, 1, 0),
       (Math.PI / 180) * 30,
       tmpMat4
     );

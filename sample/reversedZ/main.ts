@@ -398,7 +398,7 @@ const textureQuadPassDescriptor: GPURenderPassDescriptor = {
       // view is acquired and set in render loop.
       view: undefined,
 
-      clearValue: [0.0, 0.0, 0.5, 1.0],
+      clearValue: [1.0, 0.0, 0.0, 1.0],
       loadOp: 'clear',
       storeOp: 'store',
     },
@@ -543,6 +543,7 @@ function updateTransformationMatrix() {
 }
 
 const settings = {
+  // mode: 'depth-texture',
   mode: 'color',
 };
 const gui = new GUI();
@@ -629,8 +630,7 @@ function frame() {
     // depth texture quad
     for (const m of depthBufferModes) {
       {
-        depthPrePassDescriptor.depthStencilAttachment.depthClearValue =
-          depthClearValues[m];
+        depthPrePassDescriptor.depthStencilAttachment.depthClearValue = depthClearValues[m];
         const depthPrePass = commandEncoder.beginRenderPass(
           depthPrePassDescriptor
         );

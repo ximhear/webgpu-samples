@@ -6,7 +6,7 @@ struct Uniforms {
 @group(1) @binding(0) var<uniform> modelMatrix : mat4x4f;
 
 struct VertexInput {
-  @location(0) position : vec4f,
+  @location(0) position : vec4f, // buffer의 attributes와 매칭되지 않지만, 자동으로 w를 1로 채워주는 것 같다. 
   @location(1) normal : vec3f,
   @location(2) uv : vec2f
 }
@@ -31,8 +31,8 @@ fn vertexMain(input: VertexInput) -> VertexOutput {
 
 // Static directional lighting
 const lightDir = vec3f(1, 1, 1);
-const dirColor = vec3(1);
-const ambientColor = vec3f(0.05);
+const dirColor = vec3(0.6, 0.5, 0.7);
+const ambientColor = vec3f(0, 0.15, 0);
 
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4f {

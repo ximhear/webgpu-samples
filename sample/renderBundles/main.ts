@@ -20,7 +20,7 @@ quitIfWebGPUNotAvailable(adapter, device);
 
 const settings = {
   useRenderBundles: true,
-  asteroidCount: 5000,
+  asteroidCount: 3000,
 };
 const gui = new GUI();
 gui.add(settings, 'useRenderBundles');
@@ -174,6 +174,7 @@ function createSphereRenderable(
     heightSegments,
     randomness
   );
+  console.log(typeof sphereMesh.vertices)
 
   // Create a vertex buffer from the sphere data.
   const vertices = device.createBuffer({
@@ -247,7 +248,7 @@ const asteroids = [
   createSphereRenderable(0.013, 8, 6, 0.15),
   createSphereRenderable(0.017, 8, 6, 0.15),
   createSphereRenderable(0.02, 8, 6, 0.15),
-  createSphereRenderable(0.03, 16, 8, 0.15),
+  createSphereRenderable(0.05, 16, 8, 0.15),
 ];
 
 const renderables = [planet];
@@ -310,7 +311,7 @@ const frameBindGroup = device.createBindGroup({
 
 function getTransformationMatrix() {
   const viewMatrix = mat4.identity();
-  mat4.translate(viewMatrix, vec3.fromValues(0, 0, -4), viewMatrix);
+  mat4.translate(viewMatrix, vec3.fromValues(0, 0, -8), viewMatrix);
   const now = Date.now() / 1000;
   // Tilt the view matrix so the planet looks like it's off-axis.
   mat4.rotateZ(viewMatrix, Math.PI * 0.1, viewMatrix);

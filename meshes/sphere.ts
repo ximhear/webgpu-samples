@@ -53,9 +53,9 @@ export function createSphereMesh(
         vec3.copy(firstVertex, vertex);
       } else if (ix == 0 || (iy != 0 && iy !== heightSegments)) {
         const rr = radius + (Math.random() - 0.5) * 2 * randomness * radius;
-
+        
         // vertex
-        vertex[0] = -rr * Math.cos(u * Math.PI * 2) * Math.sin(v * Math.PI);
+        vertex[0] = rr * Math.cos(u * Math.PI * 2) * Math.sin(v * Math.PI);
         vertex[1] = rr * Math.cos(v * Math.PI);
         vertex[2] = rr * Math.sin(u * Math.PI * 2) * Math.sin(v * Math.PI);
 
@@ -72,7 +72,8 @@ export function createSphereMesh(
       vertices.push(...normal);
 
       // uv
-      vertices.push(u + uOffset, 1 - v);
+      vertices.push(u + uOffset, v);
+      // vertices.push(u + uOffset, 1 - v);
       verticesRow.push(index++);
     }
 

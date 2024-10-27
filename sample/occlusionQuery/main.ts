@@ -38,13 +38,19 @@ quitIfWebGPUNotAvailable(adapter, device);
 const canvas = document.querySelector('canvas') as HTMLCanvasElement;
 const context = canvas.getContext('webgpu') as GPUCanvasContext;
 const devicePixelRatio = window.devicePixelRatio;
+console.log('canvas size', canvas.width, canvas.height);
+console.log('canvas size', canvas.clientWidth, canvas.clientHeight);
+console.log('devicePixelRatio', devicePixelRatio);
 canvas.width = canvas.clientWidth * devicePixelRatio;
 canvas.height = canvas.clientHeight * devicePixelRatio;
+console.log('canvas size', canvas.width, canvas.height);
 const presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+
+// alpheMode list: 'opaque', 'premultiplied'
 context.configure({
   device,
   format: presentationFormat,
-  alphaMode: 'premultiplied',
+  alphaMode: 'opaque', // 'opaque' is the default
 });
 const depthFormat = 'depth24plus';
 
@@ -52,8 +58,25 @@ const module = device.createShaderModule({
   code: solidColorLitWGSL,
 });
 
+const bindGroupLayout = device.createBindGroupLayout({
+  entries: [
+    {
+      binding: 0, // 유니폼 버퍼의 바인딩 슬롯
+      visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT, // 정점과 프래그먼트 셰이더 모두에서 접근 가능
+      buffer: {
+        type: 'uniform', // 유니폼 버퍼 타입
+      },
+    },
+  ],
+});
+
+// 2. 파이프라인 레이아웃 생성
+const pipelineLayout = device.createPipelineLayout({
+  bindGroupLayouts: [bindGroupLayout], // 하나 이상의 바인드 그룹 레이아웃을 참조
+});
+
 const pipeline = device.createRenderPipeline({
-  layout: 'auto',
+  layout: pipelineLayout,
   vertex: {
     module,
     buffers: [
@@ -111,6 +134,7 @@ const objectInfos = cubePositions.map(({ position, id, color }) => {
 
   return {
     id,
+    // position: position.map((v) => v * 4),
     position: position.map((v) => v * 10),
     bindGroup,
     uniformBuffer,
@@ -212,7 +236,7 @@ const renderPassDescriptor: GPURenderPassDescriptor = {
   colorAttachments: [
     {
       view: undefined, // Assigned later
-      clearValue: { r: 0.5, g: 0.5, b: 0.5, a: 1.0 },
+      clearValue: { r: 0.5, g: 1.0, b: 0.5, a: 1.0 },
       loadOp: 'clear',
       storeOp: 'store',
     },
@@ -252,10 +276,19 @@ function render(now: number) {
   );
 
   const m = mat4.identity();
+  
+  // mat4.rotateX(m, time, m);
+  // mat4.rotateY(m, time * 0.7, m);
+  // mat4.translate(m, lerpV([0, 0, -5], [0, 0, -40], pingPongSine(time * 0.2)), m);
+  // const view = mat4.inverse(m);
+
+  mat4.translate(m, lerpV([0, 0, -5], [0, 0, -40], pingPongSine(time * 0.2)), m);
   mat4.rotateX(m, time, m);
   mat4.rotateY(m, time * 0.7, m);
-  mat4.translate(m, lerpV([0, 0, 5], [0, 0, 40], pingPongSine(time * 0.2)), m);
-  const view = mat4.inverse(m);
+  // mat4.rotateZ(m, 0.3, m);
+  // mat4.rotateX(m, 0.3, m);
+  const view = m
+  
   const viewProjection = mat4.multiply(projection, view);
 
   const canvasTexture = context.getCurrentTexture();
@@ -294,7 +327,10 @@ function render(now: number) {
       },
       i
     ) => {
-      const world = mat4.translation(position);
+      let world = mat4.translation(position);
+      // let s = 0.5;
+      // mat4.scale(world, [s, s, s, 1], world);
+
       mat4.transpose(mat4.inverse(world), worldInverseTranspose);
       mat4.multiply(viewProjection, world, worldViewProjection);
 

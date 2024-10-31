@@ -28,7 +28,7 @@ fn vmain(
     vec2(1 + flange, -flange), vec2(-flange, 1 + flange), vec2(1 + flange, 1 + flange),
   );
   // Default size (if matrix is the identity) makes 1 texel = 1 pixel.
-  let radius = (1 + 2 * flange) * kTextureBaseSize / kViewportSize;
+  var radius = (1 + 2 * flange) * kTextureBaseSize / kViewportSize;
   var positions = array(
     vec2(-radius, -radius), vec2(-radius, radius), vec2(radius, -radius),
     vec2(radius, -radius), vec2(-radius, radius), vec2(radius, radius),

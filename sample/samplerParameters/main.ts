@@ -201,9 +201,9 @@ const checkerboardView = checkerboard.createView();
 
 const kColorForLevel = [
   [255, 255, 255, 255],
-  [30, 136, 229, 255], // blue
-  [255, 193, 7, 255], // yellow
-  [216, 27, 96, 255], // pink
+  [0, 0, 255, 255], // blue
+  [0, 255, 0, 255], // yellow
+  [255, 0, 0, 255], // pink
 ];
 for (let mipLevel = 0; mipLevel < kTextureMipLevels; ++mipLevel) {
   const size = 2 ** (kTextureMipLevels - mipLevel); // 16, 8, 4, 2

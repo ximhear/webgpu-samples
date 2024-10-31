@@ -29,5 +29,6 @@ fn vmain(
 
 @fragment
 fn fmain(vary: Varying) -> @location(0) vec4f {
-  return textureLoad(tex, vec2u(vary.texelCoord), u32(vary.mipLevel));
+  let color = textureLoad(tex, vec2u(vary.texelCoord), u32(vary.mipLevel));
+  return color;
 }
